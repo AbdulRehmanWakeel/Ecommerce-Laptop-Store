@@ -29,4 +29,15 @@ class Order extends Model
         if ($customerId) return $query->where('customer_id', $customerId);
         return $query;
     }
+    public function calculateTotal()
+    {
+        return $this->orderItems->sum(function ($item) {
+            return $item->price * $item->quantity;
+        });
+    }
+
+    public function hasVariantItems()
+    {
+        return $this->orderItems()->whereNotNull('variant_id')->exists();
+    }
 }
