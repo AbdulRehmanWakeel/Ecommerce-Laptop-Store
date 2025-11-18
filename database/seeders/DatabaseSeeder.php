@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Super Admin',
                 'password' => Hash::make('admin123'),
+                'email_verified_at' => now(),
+
             ]
         );
         $this->call([
