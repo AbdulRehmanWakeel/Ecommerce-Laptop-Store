@@ -17,20 +17,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::updateOrCreate(
-        //     ['email' => 'admin@laptopstore.com'],
-        //     [
-        //         'name' => 'Super Admin',
-        //         'password' => Hash::make('admin123'),
-        //         'email_verified_at' => now(),
+        User::updateOrCreate(
+            ['email' => 'admin@laptopstore.com'],
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make('admin123'),
+                'email_verified_at' => now(),
 
-        //     ]
-        // );
+            ]
+        );
         $this->call([
-            // ShopOwnerSeeder::class,
-            // CustomerSeeder::class,
-            // ProductSeeder::class,
-            // OrderSeeder::class,
+            ShopOwnerSeeder::class,
+            CustomerSeeder::class,
+            ProductSeeder::class,
+            OrderSeeder::class,
             VariantSeeder::class,
             OrderItemSeeder::class,
         ]);
