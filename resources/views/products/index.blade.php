@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Products')
+
 @section('content')
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -40,6 +42,9 @@
                         <th>Image</th>
                         <th>Name</th>
                         <th>Brand</th>
+                        <th>Model</th>
+                        <th>Category</th>
+                        <th>OS</th>
                         <th>Shop Owner</th>
                         <th>Price</th>
                         <th>Stock</th>
@@ -59,21 +64,51 @@
                             </td>
                             <td>{{ $product->name }}</td>
                             <td>{{ $product->brand ?? '-' }}</td>
-                            <td>{{ $product->shopOwner->name }}</td>
-                            <td>${{ number_format($product->price, 2) }}</td>
-                            <td>{{ $product->stock }}</td>
+                            <td>{{ $product->model_name }}</td>
+                            <td>
+                                @if($product->category === 'laptop')
+                                    <span class="badge bg-primary">Laptop</span>
+                                @else
+                                    <span class="badge bg-secondary">{{ $product->category }}</span>
+                                @endif
+                            </td>
+                            <td>{{ $product->operating_system ?? '-' }}</td>
+                            <td>{{ $product->shopOwner->name ?? '-' }}</td>
+                            <td>
+                                @if($product->has_variants)
+                                    ${{ number_format($product->min_price, 2) }} - ${{ number_format($product->max_price, 2) }}
+                                @else
+                                    ${{ number_format($product->price, 2) }}
+                                @endif
+                            </td>
+                            <td>
+                                @if($product->has_variants)
+                                    {{ $product->variants->sum('stock') }}
+                                @else
+                                    {{ $product->stock }}
+                                @endif
+                            </td>
                             <td class="text-center">
                                 <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-warning me-1">Edit</a>
+
                                 <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button onclick="return confirm('Delete this product?')" class="btn btn-sm btn-danger">Delete</button>
                                 </form>
+
+                                <a href="{{ route('products.variants.index', $product) }}" class="btn btn-sm btn-info ms-1">
+                                    @if($product->has_variants)
+                                        View Variants
+                                    @else
+                                        Add Variants
+                                    @endif
+                                </a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">No Products found.</td>
+                            <td colspan="11" class="text-center py-4 text-muted">No Products found.</td>
                         </tr>
                     @endforelse
                 </tbody>

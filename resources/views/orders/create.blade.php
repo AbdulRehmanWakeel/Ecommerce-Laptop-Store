@@ -35,6 +35,7 @@
                 <thead>
                     <tr>
                         <th>Product</th>
+                        <th>Variant (optional)</th>
                         <th>Quantity</th>
                         <th>Price</th>
                         <th>
@@ -45,11 +46,16 @@
                 <tbody>
                     <tr>
                         <td>
-                            <select name="order_items[0][product_id]" class="form-control" required>
+                            <select name="order_items[0][product_id]" class="form-control product-select" required>
                                 <option value="">Select Product</option>
                                 @foreach(\App\Models\Product::all() as $product)
                                     <option value="{{ $product->id }}">{{ $product->name }}</option>
                                 @endforeach
+                            </select>
+                        </td>
+                        <td>
+                            <select name="order_items[0][variant_id]" class="form-control variant-select">
+                                <option value="">Select Variant</option>
                             </select>
                         </td>
                         <td><input type="number" name="order_items[0][quantity]" class="form-control quantity" min="1" value="1" required></td>
@@ -84,6 +90,23 @@
 <script>
 let index = 1;
 
+const products = @json(\App\Models\Product::with('variants')->get());
+
+function updateVariantOptions(row) {
+    const productId = row.querySelector('.product-select').value;
+    const variantSelect = row.querySelector('.variant-select');
+    variantSelect.innerHTML = '<option value="">Select Variant</option>';
+    const product = products.find(p => p.id == productId);
+    if(product && product.variants.length) {
+        product.variants.forEach(v => {
+            const option = document.createElement('option');
+            option.value = v.id;
+            option.textContent = `${v.processor}, ${v.ram} RAM, ${v.storage}`;
+            variantSelect.appendChild(option);
+        });
+    }
+}
+
 function calculateTotal() {
     let total = 0;
     document.querySelectorAll('#order-items-table tbody tr').forEach(row => {
@@ -106,11 +129,10 @@ document.getElementById('add-item').addEventListener('click', () => {
             input.value = input.name.includes('quantity') ? 1 : 0;
         } else if(input.tagName === 'SELECT') {
             input.selectedIndex = 0;
-        } else {
-            input.value = '';
         }
     });
 
+    newRow.querySelector('.product-select').addEventListener('change', () => updateVariantOptions(newRow));
     tbody.appendChild(newRow);
     index++;
     calculateTotal();
@@ -124,7 +146,17 @@ document.querySelector('#order-items-table').addEventListener('click', e => {
     }
 });
 
-document.querySelector('#order-items-table').addEventListener('input', calculateTotal);
+document.querySelector('#order-items-table').addEventListener('change', e => {
+    if(e.target.classList.contains('product-select')) {
+        updateVariantOptions(e.target.closest('tr'));
+    }
+});
+
+document.querySelector('#order-items-table').addEventListener('input', e => {
+    if(e.target.classList.contains('quantity') || e.target.classList.contains('price')) {
+        calculateTotal();
+    }
+});
 
 window.addEventListener('load', calculateTotal);
 </script>

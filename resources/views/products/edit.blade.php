@@ -44,6 +44,18 @@
             <label class="form-label">Description</label>
             <textarea name="description" class="form-control" rows="3">{{ old('description', $product->description) }}</textarea>
         </div>
+        <div class="mb-3">
+            <label class="form-label">Model Name</label>
+            <input type="text" name="model_name" value="{{ old('model_name', $product->model_name) }}" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Category</label>
+            <input type="text" name="category" value="{{ old('category', $product->category ?? 'laptop') }}" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Operating System</label>
+            <input type="text" name="operating_system" value="{{ old('operating_system', $product->operating_system) }}" class="form-control">
+        </div>
 
         <div class="mb-3">
             <label class="form-label">Price</label>

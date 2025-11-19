@@ -8,7 +8,7 @@ class Product extends Model
 {
     protected $fillable = [
         'shop_owner_id', 'name', 'brand', 'description', 
-        'model_name', 'category', 'operating_system', 'base_price', 'stock', 'image'
+        'model_name', 'category', 'operating_system', 'price', 'stock', 'image'
     ];
 
     public function shopOwner()

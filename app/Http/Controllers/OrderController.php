@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
-use App\Models\OrderItem;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
+use App\Models\Order;
+use App\Models\OrderItem;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-   public function index(Request $request)
+    public function index(Request $request)
     {
-        $orders = Order::with('customer', 'orderItems.product')
-                        ->status($request->status)
-                        ->ofCustomer($request->customer_id)
-                        ->paginate(10);
+        $orders = Order::with('customer', 'orderItems.product', 'orderItems.variant')
+            ->status($request->status)
+            ->ofCustomer($request->customer_id)
+            ->latest()
+            ->paginate(10);
 
         return view('orders.index', compact('orders'));
     }
@@ -29,13 +30,15 @@ class OrderController extends Controller
     {
         $order = Order::create([
             'customer_id' => $request->customer_id,
-            'total_amount' => collect($request->order_items)->sum(fn($item) => $item['price'] * $item['quantity']),
-            'status' => $request->status ?? 'pending'
+            'status' => $request->status ?? 'pending',
+            'total_amount' => 0,
         ]);
 
         foreach ($request->order_items as $item) {
             $order->orderItems()->create($item);
         }
+
+        $order->update(['total_amount' => $order->calculateTotal()]);
 
         return redirect()->route('orders.index')->with('success', 'Order created successfully.');
     }
@@ -50,25 +53,39 @@ class OrderController extends Controller
     {
         $order->update([
             'customer_id' => $request->customer_id,
-            'status' => $request->status,
-            'total_amount' => $request->has('order_items') 
-                ? collect($request->order_items)->sum(fn($item) => $item['price'] * $item['quantity']) 
-                : $order->total_amount
+             'status' => $request->status
         ]);
 
         if ($request->has('order_items')) {
-            $order->orderItems()->delete();
-            foreach ($request->order_items as $item) {
-                $order->orderItems()->create($item);
+            foreach ($request->order_items as $itemData) {
+                if (isset($itemData['id'])) {
+                    $orderItem = $order->orderItems()->find($itemData['id']);
+                    if ($orderItem) {
+                        $orderItem->update($itemData);
+                    }
+                } else {
+                    $order->orderItems()->create($itemData);
+                }
             }
         }
 
+        $order->update(['total_amount' => $order->calculateTotal()]);
+
         return redirect()->route('orders.index')->with('success', 'Order updated successfully.');
     }
+
 
     public function destroy(Order $order)
     {
         $order->delete();
         return redirect()->route('orders.index')->with('success', 'Order deleted successfully.');
+    }
+
+    public function destroyItem(OrderItem $orderItem)
+    {
+        $order = $orderItem->order;
+        $orderItem->delete();
+        $order->update(['total_amount' => $order->calculateTotal()]);
+        return back()->with('success', 'Order item removed.');
     }
 }

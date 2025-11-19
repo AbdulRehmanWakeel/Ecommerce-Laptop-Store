@@ -22,9 +22,11 @@ class UpdateOrderRequest extends FormRequest
     public function rules()
     {
         return [
+            'customer_id' => 'sometimes|required|exists:customers,id',  
             'status' => 'required|string|in:pending,completed,cancelled',
             'order_items' => 'sometimes|array|min:1',
             'order_items.*.product_id' => 'required_with:order_items|exists:products,id',
+            'order_items.*.variant_id' => 'nullable|exists:variants,id',
             'order_items.*.quantity' => 'required_with:order_items|integer|min:1',
             'order_items.*.price' => 'required_with:order_items|numeric|min:0',
         ];

@@ -6,6 +6,7 @@ use App\Http\Controllers\ShopOwnerController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\VariantController;
 
 
 Route::get('/', function () {
@@ -28,4 +29,8 @@ Route::resource('shop-owners', ShopOwnerController::class);
 Route::resource('customers', CustomerController::class);
 Route::resource('products', ProductController::class);
 Route::resource('orders', OrderController::class);
+
+Route::prefix('products/{product}')->name('products.')->group(function () {
+    Route::resource('variants', VariantController::class);
+});
 

@@ -54,7 +54,7 @@
                 <tbody>
                     @forelse($orders as $order)
                         <tr>
-                            <td>{{ $order->id }}</td>
+                            <td>{{ $loop->iteration }}</td>
                             <td>{{ $order->customer->name ?? 'N/A' }}</td>
                             <td>${{ number_format($order->total_amount, 2) }}</td>
                             <td>{{ ucfirst($order->status) }}</td>

@@ -26,6 +26,7 @@ class StoreOrderRequest extends FormRequest
             'status' => 'nullable|string|in:pending,completed,cancelled',
             'order_items' => 'required|array|min:1',
             'order_items.*.product_id' => 'required|exists:products,id',
+            'order_items.*.variant_id' => 'nullable|exists:variants,id',
             'order_items.*.quantity' => 'required|integer|min:1',
             'order_items.*.price' => 'required|numeric|min:0',
         ];
