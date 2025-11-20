@@ -53,25 +53,30 @@ class OrderController extends Controller
     {
         $order->update([
             'customer_id' => $request->customer_id,
-             'status' => $request->status
+            'status' => $request->status
         ]);
-
-        if ($request->has('order_items')) {
-            foreach ($request->order_items as $itemData) {
-                if (isset($itemData['id'])) {
-                    $orderItem = $order->orderItems()->find($itemData['id']);
-                    if ($orderItem) {
-                        $orderItem->update($itemData);
-                    }
-                } else {
-                    $order->orderItems()->create($itemData);
+        $formItemIds = collect($request->order_items)
+        ->pluck('id')
+        ->filter()
+        ->toArray();
+        $order->orderItems()
+        ->whereNotIn('id', $formItemIds)
+        ->delete();
+        foreach ($request->order_items as $itemData) {
+            if (isset($itemData['id'])) {
+                $orderItem = $order->orderItems()->find($itemData['id']);
+                if ($orderItem) {
+                    $orderItem->update($itemData);
                 }
+            } else {
+                $order->orderItems()->create($itemData);
             }
         }
-
-        $order->update(['total_amount' => $order->calculateTotal()]);
-
-        return redirect()->route('orders.index')->with('success', 'Order updated successfully.');
+        $order->update([
+            'total_amount' => $order->calculateTotal()
+        ]);
+        return redirect()->route('orders.index')
+        ->with('success', 'Order updated successfully.');
     }
 
 
